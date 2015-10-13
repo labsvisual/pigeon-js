@@ -1,0 +1,27 @@
+{
+  "name": "Pigeon.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/labsvisual/pigeon-js",
+  "authors": [
+    "Shreyansh Pandey <334@doonschool.com>"
+  ],
+  "description": "A simple library for getting rid of the dead-wood of modern web-design: the contact form.",
+  "keywords": [
+    "simple",
+    "easy",
+    "fast",
+    "contact",
+    "forms",
+    "validation",
+    "input",
+    "output"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
