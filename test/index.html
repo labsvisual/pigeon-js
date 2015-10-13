@@ -6,6 +6,7 @@
     </head>
     <body>
         <p>Hello World</p>
+        <p id="messages"></p>
         <form id="testForm" class="testForm">
 
             <input type="text" data-pigeon-validate="max-len:10; min-len:2; only-alphabets" name="Name" placeholder="Name" value="Hello"/>
@@ -21,7 +22,7 @@
         <script src="../src/pigeon.js"></script>
         <script>
 
-            var a = new Pigeon("post", "http://localhost/contact", "form");
+            var a = new Pigeon("post", "http://localhost/contact", "form", "#messages");
 
         </script>
     </body>

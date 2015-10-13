@@ -11,12 +11,13 @@
 /**
  *
  *  Pigeon( String, String, String )
- *      - String (method)       ===== The HTTP verb to use while executing the request.
- *      - String (action)       ===== The HTTP host to connect to for the request.
- *      - String (formElement)  ===== The form to used for this particular instance.
+ *      - String (method)               ===== The HTTP verb to use while executing the request.
+ *      - String (action)               ===== The HTTP host to connect to for the request.
+ *      - String (formElement)          ===== The form to used for this particular instance.
+ *      - String (messageHandle)        ===== The form element which will get the messages from the form.
  *
  */
-function Pigeon( method, action, formElement ) {
+function Pigeon( method, action, formElement, messageHandle ) {
 
     if ( method == null || method === "" ) {
         console.log( "The method field is invalid. For the object to instantiate successfully, the initializer requires a 'method' field." );
@@ -30,6 +31,11 @@ function Pigeon( method, action, formElement ) {
 
     if ( formElement == null || formElement === "" ) {
         console.log( "The 'formElement' field is invalid. For the object to instantiate successfully, the initializer requires a 'formElement' field." );
+        return;
+    }
+
+    if ( messageHandle == null || messageHandle === "" ) {
+        console.log( "The 'messageHandle' field is invalid. For the object to instantiate successfully, the initializer requires a 'messageHandle' field." );
         return;
     }
 
@@ -55,7 +61,23 @@ function Pigeon( method, action, formElement ) {
 
     }
 
-    this.formElement = elements;
+    switch( messageHandle.substring( 0, 1 ) ) {
+
+        case "#":
+            elementsHandle = document.getElementById( messageHandle.replace( "#", "" ) );
+            break;
+
+        case ".":
+            elementsHandle = document.getElementsByClassName( messageHandle.replace( ".", "" ) )[ 0 ];
+            break;
+
+        default:
+            elementsHandle = document.getElementsByTagName( messageHandle )[ 0 ];
+
+    }
+
+    this.formElement   = elements;
+    this.messageHandle = elementsHandle;
     this.initialize();
 
 }
@@ -125,11 +147,35 @@ Pigeon.prototype.initialize = function() {
         this.inputs.push( this.formElement.elements[ i ] );
     }
 
-};
+    this.attachHandler();
+
+}
+
+Pigeon.prototype.attachHandler = function() {
+
+    var self = this;
+
+    for ( var i = 0; i < this.inputs.length; i++ ) {
+
+        var currentInput = this.inputs[ i ];
+        if ( currentInput.getAttribute( 'type' ).toLowerCase() === "submit" ) {
+
+            currentInput.addEventListener('click', function() {
+
+                self.submit();
+
+            });
+
+        }
+
+    }
+
+}
 
 Pigeon.prototype.validate = function() {
 
-    var errors = [];
+    var errors        = [],
+        errorElements = [];
 
     for( var i = 0; i < this.inputs.length; i++ ) {
 
@@ -156,6 +202,7 @@ Pigeon.prototype.validate = function() {
                         var attributeValue   = currentAttribute[ 1 ].trim();
                         if ( inputValue.length > parseInt( attributeValue ) ) {
                             errors.push( "\"" + currentElement.name + "\" exceeds the provided length constraint." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -167,6 +214,7 @@ Pigeon.prototype.validate = function() {
                         var attributeValue   = currentAttribute[ 1 ].trim();
                         if ( inputValue.length < parseInt( attributeValue ) ) {
                             errors.push( "\"" + currentElement.name + "\" is less than the provided length constraint." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -178,6 +226,7 @@ Pigeon.prototype.validate = function() {
                         var regex = /^[0-9]*$/;
                         if ( !regex.test( inputValue ) ) {
                             errors.push( "\"" + currentElement.name + "\" contains invalid characters." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -189,6 +238,7 @@ Pigeon.prototype.validate = function() {
                         var regex = /^[0-9 ]*$/;
                         if ( !regex.test( inputValue ) ) {
                             errors.push( "\"" + currentElement.name + "\" contains invalid characters." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -200,6 +250,7 @@ Pigeon.prototype.validate = function() {
                         var regex = /^[a-zA-Z ]*$/;
                         if ( !regex.test( inputValue ) ) {
                             errors.push( "\"" + currentElement.name + "\" contains invalid characters." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -209,6 +260,7 @@ Pigeon.prototype.validate = function() {
 
                         if ( inputValue == null || inputValue === "" ) {
                             errors.push( "\"" + currentElement.name + "\" is required." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -219,6 +271,7 @@ Pigeon.prototype.validate = function() {
 
                         if ( !( (  inputValue.indexOf( '@' ) > -1 ) && ( inputValue.indexOf( '.' ) > -1 ) ) ) {
                             errors.push( "\"" + currentElement.name + "\" is not a valid email address." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -229,6 +282,7 @@ Pigeon.prototype.validate = function() {
 
                         if ( !( ( inputValue.startsWith( "http://" ) || inputValue.startsWith( "https://" ) || inputValue.startsWith( "ftp://" ) ) && ( inputValue.indexOf( '.' ) > -1 ) ) ) {
                             errors.push( "\"" + currentElement.name + "\" is not a valid URL." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -240,6 +294,7 @@ Pigeon.prototype.validate = function() {
                         var regex = /^[a-zA-Z0-9 ]*$/;
                         if ( !regex.test( inputValue ) ) {
                             errors.push( "\"" + currentElement.name + "\" contains invalid characters." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -250,6 +305,7 @@ Pigeon.prototype.validate = function() {
                         var regex = /^[0-9]*$/;
                         if ( !regex.test( inputValue ) || inputValue.length > 10 ) {
                             errors.push( "\"" + currentElement.name + "\" is not a valid phone number." );
+                            errorElements.push ( currentElement );
                         }
 
                         break;
@@ -260,6 +316,7 @@ Pigeon.prototype.validate = function() {
                         var regex = /^[0-9]*$/;
                         if ( !regex.test( inputValue ) || inputValue.length > 16 ) {
                             errors.push( "\"" + currentElement.name + "\" is not a valid credit card number." );
+                            errorElements.push ( currentElement );
                             break;
                         }
 
@@ -302,8 +359,6 @@ Pigeon.prototype.validate = function() {
 
                         }
 
-                        console.log(doubleDigits);
-
                         var sum = checkDigit;
                         for ( var k = 0; k < doubleDigits.length; k++ ) {
 
@@ -314,6 +369,7 @@ Pigeon.prototype.validate = function() {
                         if ( ! ( sum % 10 === 0 ) ) {
 
                             errors.push( "\"" + currentElement.name + "\" is not a valid credit card number." );
+                            errorElements.push ( currentElement );
 
                         }
 
@@ -327,8 +383,20 @@ Pigeon.prototype.validate = function() {
 
     }
 
-    console.log( errors );
+    return {
+        isValid: ( errors.length == 0 ),
+        errors: errors
+    };
 
-    return false;
+}
+
+Pigeon.prototype.submit = function() {
+
+    var result = this.validate();
+    if ( !result.isValid ) {
+
+        this.messageHandle.innerText = "Oops! Looks like there are some errors with the form.";
+
+    }
 
 }
