@@ -10,7 +10,7 @@
 
 /**
  *
- *  Pigeon( String, String, String, Function )
+ *  Pigeon( String, String, String, Function, Function, Function, Boolean )
  *      - Object (config)                   ===== Contains the base configuration for the instance.
  *
  *          - String (method)               ===== The HTTP verb to use while executing the request.
@@ -472,8 +472,6 @@ Pigeon.prototype.submit = function() {
         return;
 
     }
-
-    console.log(result);
 
     // Reminder to self: when you wrote this code, only God and you knew what is going on; now, only God knows.
     // var responses = "{";
