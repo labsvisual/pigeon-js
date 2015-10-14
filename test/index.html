@@ -2,19 +2,44 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Hello World</title>
+        <title>Test File</title>
+
+        <style>
+            input{
+                outline: 0;
+            }
+            input.error {
+                border: 1px solid red;
+            }
+        </style>
     </head>
     <body>
         <p>Hello World</p>
+        <p id="messages"></p>
         <form id="testForm" class="testForm">
+
+            <input type="text" data-pigeon-validate="max-len:10; min-len:2; only-alphabets" name="Name" placeholder="Name" />
+            <input type="text" data-pigeon-validate="email" name="email" placeholder="Email" />
+            <input type="text" data-pigeon-validate="phone" name="Phone" placeholder="Phone" />
+            <input type="text" data-pigeon-validate="required; alphanumeric" name="Alphanumeric" placeholder="alphanumeric" />
+            <input type="text" data-pigeon-validate="url" name="URL" placeholder="URL" />
+            <input type="text" data-pigeon-validate="credit-card" name="credit-card" placeholder="Credit Card"/>
+            <input type="submit" name="Submit" />
 
         </form>
 
         <script src="../src/pigeon.js"></script>
         <script>
 
-            var a = new Pigeon("post", "http://localhost/contact", "form");
-            a.initializeHost();
+            var a = new Pigeon({
+                method: "POST",
+                action: "http://backend.address:9999",
+                formElement: "#testForm",
+                errorClass: "error",
+                prompt: function( element, message ) {
+                    element.className = "error";
+                }
+            });
 
         </script>
     </body>
