@@ -16,21 +16,18 @@
  *          - String (method)               ===== The HTTP verb to use while executing the request.
  *          - String (action)               ===== The HTTP host to connect to for the request.
  *          - String (formElement)          ===== The form to used for this particular instance.
+ *          - String (errorClass)           ===== The class added when there is an error.
  *          - Function (prompt)             ===== The function used to prompt the user of the error.
+ *          - Function (successHandler)     ===== The function used to tell the people when the form has been submitted successfully.
+ *          - Function (errorHandler)       ===== The function used to tell the people when the form has been submitted but with errors.
  *
- *
- *      - Object (backendResponse)          ===== The structure of the response from the backend. Currently only supports JSON.
+ *      - Boolean (async)                   ===== Sets if the AJAX request should be async.
  *
  */
-function Pigeon( config, backendResponse ) {
+function Pigeon( config, async ) {
 
     if ( config == null ) {
         console.log( "The configuration object is null. For the object to instantiate successfully, the initializer requires a configiration object." );
-        return;
-    }
-
-    if ( backendResponse == null ) {
-        console.log( "The backend response hasn't been modelled. For the object to instantiate successfully, the initializer requires a backendResponse object." );
         return;
     }
 
@@ -54,9 +51,24 @@ function Pigeon( config, backendResponse ) {
         return;
     }
 
+    // Behold! Lay the dragons.
+
+    var errorHandler = function( inputs ) {
+        alert("Oops! There were errors in submitting the form.");
+    }
+
+    var successHandler = function( inputs ) {
+        alert("Woohoo! :D Done.");
+    }
+
     this.method = config.method || "POST";
     this.action = config.action || "/contact";
+    this.async  = async || true;
+    this.errorClass = config.errorClass || "error";
+
     this.prompt = config.prompt;
+    this.errorHandler = config.errorHandler || errorHandler;
+    this.successHandler = config.successHandler || successHandler;
 
     this.inputs = [];
 
@@ -160,6 +172,8 @@ Pigeon.prototype.attachHandler = function() {
         var currentInput = this.inputs[ i ];
         if ( currentInput.getAttribute( 'type' ).toLowerCase() === "submit" ) {
 
+            currentInput.setAttribute( 'onclick', 'return false;' ); // Hack, but works! :D
+
             currentInput.addEventListener('click', function() {
 
                 self.submit();
@@ -174,11 +188,18 @@ Pigeon.prototype.attachHandler = function() {
 
 Pigeon.prototype.validate = function() {
 
+    var self = this;
+
+    for( var i = 0; i < this.inputs.length; i++ ) {
+        if( this.inputs[ i ].getAttribute( 'class' ) && ( this.inputs[ i ].getAttribute( 'class' ).indexOf( self.errorClass ) > -1 ) ) {
+            this.inputs[ i ].classList.remove( self.errorClass );
+        }
+    }
+
     var errors        = [],
         errorElements = [];
 
     for( var i = 0; i < this.inputs.length; i++ ) {
-
 
         var currentElement   = this.inputs[ i ];
         var validationString = currentElement.getAttribute( 'data-pigeon-validate' );
@@ -302,8 +323,9 @@ Pigeon.prototype.validate = function() {
                     case "phone":
 
                         // if ( !isRequired ) { break; }
+                        var maxLen = ( inputValue.startsWith( "+" ) && ( inputValue.length == 13 ) ) ? 13 : 10;
                         var regex = /^[0-9]*$/;
-                        if ( !regex.test( inputValue ) || inputValue.length > 10 ) {
+                        if ( !regex.test( inputValue ) || inputValue.length > maxLen ) {
                             errors.push( "\"" + currentElement.name + "\" is not a valid phone number." );
                             errorElements.push ( currentElement );
                         }
@@ -406,6 +428,31 @@ Pigeon.prototype.formatParams = function() {
 
 }
 
+Pigeon.prototype.loadingFinishedHandler = function( xhr, inputs ) {
+
+    var evald = eval( "(" + xhr.responseText + ")" );
+
+    // We use the standard HTTP response codes
+    // 200 - OK!
+    // 400 - Something's wrong with the request
+    // 500 - The server's in the ICU.
+
+    switch( evald.status_code ) {
+
+        default:
+        case 200:
+            this.successHandler();
+            break;
+
+        case 400:
+        case 500:
+            this.errorHandler( inputs );
+            break;
+
+    }
+
+}
+
 Pigeon.prototype.submit = function() {
 
     var self = this;
@@ -422,7 +469,11 @@ Pigeon.prototype.submit = function() {
 
         }
 
+        return;
+
     }
+
+    console.log(result);
 
     // Reminder to self: when you wrote this code, only God and you knew what is going on; now, only God knows.
     // var responses = "{";
@@ -444,26 +495,20 @@ Pigeon.prototype.submit = function() {
 
     var xmlHttp = new XMLHttpRequest();
 
-    xmlHttp.open( this.method, this.action, false ); //sync
+    xmlHttp.open( this.method, this.action, self.async );
     xmlHttp.request = "text/json";
 
-    var wasFailed = false;
+    xmlHttp.onreadystatechange = function() {
 
-    var handlers = {
+        if ( xmlHttp.readyState == 4 ) {
 
-        error: function( event ) {
-
-            wasFailed = true;
+            self.loadingFinishedHandler( xmlHttp, self.inputs );
 
         }
 
-    };
+    }
 
-    xmlHttp.addEventListener( "error", handlers.error );
     xmlHttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-
     xmlHttp.send( params );
-
-    console.log( params );
 
 }
