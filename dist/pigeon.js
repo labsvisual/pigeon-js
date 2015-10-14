@@ -1,4 +1,4 @@
-function Pigeon( config, backendResponse ) {
+function Pigeon( config, async ) {
     if ( config == null ) {
         console.log( "The configuration object is null. For the object to instantiate successfully, the initializer requires a configiration object." );
         return;
@@ -19,9 +19,19 @@ function Pigeon( config, backendResponse ) {
         console.log( "The 'formElement' field is invalid. For the object to instantiate successfully, the initializer requires a 'formElement' field." );
         return;
     }
+    var errorHandler = function( inputs ) {
+        alert("Oops! There were errors in submitting the form.");
+    }
+    var successHandler = function( inputs ) {
+        alert("Woohoo! :D Done.");
+    }
     this.method = config.method || "POST";
     this.action = config.action || "/contact";
+    this.async  = async || true;
+    this.errorClass = config.errorClass || "error";
     this.prompt = config.prompt;
+    this.errorHandler = config.errorHandler || errorHandler;
+    this.successHandler = config.successHandler || successHandler;
     this.inputs = [];
     var elements = [];
     switch( config.formElement.substring( 0, 1 ) ) {
@@ -99,6 +109,7 @@ Pigeon.prototype.attachHandler = function() {
     for ( var i = 0; i < this.inputs.length; i++ ) {
         var currentInput = this.inputs[ i ];
         if ( currentInput.getAttribute( 'type' ).toLowerCase() === "submit" ) {
+            currentInput.setAttribute( 'onclick', 'return false;' );
             currentInput.addEventListener('click', function() {
                 self.submit();
             });
@@ -106,6 +117,12 @@ Pigeon.prototype.attachHandler = function() {
     }
 }
 Pigeon.prototype.validate = function() {
+    var self = this;
+    for( var i = 0; i < this.inputs.length; i++ ) {
+        if( this.inputs[ i ].getAttribute( 'class' ) && ( this.inputs[ i ].getAttribute( 'class' ).indexOf( self.errorClass ) > -1 ) ) {
+            this.inputs[ i ].classList.remove( self.errorClass );
+        }
+    }
     var errors        = [],
         errorElements = [];
     for( var i = 0; i < this.inputs.length; i++ ) {
@@ -181,8 +198,9 @@ Pigeon.prototype.validate = function() {
                         }
                         break;
                     case "phone":
+                        var maxLen = ( inputValue.startsWith( "+" ) && ( inputValue.length == 13 ) ) ? 13 : 10;
                         var regex = /^[0-9]*$/;
-                        if ( !regex.test( inputValue ) || inputValue.length > 10 ) {
+                        if ( !regex.test( inputValue ) || inputValue.length > maxLen ) {
                             errors.push( "\"" + currentElement.name + "\" is not a valid phone number." );
                             errorElements.push ( currentElement );
                         }
@@ -240,10 +258,23 @@ Pigeon.prototype.formatParams = function() {
     var responses = "";
     for ( var i = 0; i < this.inputs.length; i++ ) {
         var currentInput = this.inputs[ i ];
-        if ( currentInput.getAttribute( 'type' ).toLowerCase() === "submit" ) continue; 
+        if ( currentInput.getAttribute( 'type' ).toLowerCase() === "submit" ) continue;
         responses += encodeURIComponent( currentInput.name ) + "=" + encodeURIComponent( currentInput.value ) + "&";
     }
     return responses.substring( 0, responses.length - 1 );
+}
+Pigeon.prototype.loadingFinishedHandler = function( xhr, inputs ) {
+    var evald = eval( "(" + xhr.responseText + ")" );
+    switch( evald.status_code ) {
+        default:
+        case 200:
+            this.successHandler();
+            break;
+        case 400:
+        case 500:
+            this.errorHandler( inputs );
+            break;
+    }
 }
 Pigeon.prototype.submit = function() {
     var self = this;
@@ -254,19 +285,18 @@ Pigeon.prototype.submit = function() {
                 currentElement = result.errorElements[ i ];
             this.prompt( currentElement, currentError );
         }
+        return;
     }
+    console.log(result);
     var params = self.formatParams();
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( this.method, this.action, false );
+    xmlHttp.open( this.method, this.action, self.async );
     xmlHttp.request = "text/json";
-    var wasFailed = false;
-    var handlers = {
-        error: function( event ) {
-            wasFailed = true;
+    xmlHttp.onreadystatechange = function() {
+        if ( xmlHttp.readyState == 4 ) {
+            self.loadingFinishedHandler( xmlHttp, self.inputs );
         }
-    };
-    xmlHttp.addEventListener( "error", handlers.error );
+    }
     xmlHttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
     xmlHttp.send( params );
-    console.log( params );
 }
