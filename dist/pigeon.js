@@ -287,7 +287,6 @@ Pigeon.prototype.submit = function() {
         }
         return;
     }
-    console.log(result);
     var params = self.formatParams();
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open( this.method, this.action, self.async );

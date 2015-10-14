@@ -473,8 +473,6 @@ Pigeon.prototype.submit = function() {
 
     }
 
-    console.log(result);
-
     // Reminder to self: when you wrote this code, only God and you knew what is going on; now, only God knows.
     // var responses = "{";
     // for ( var i = 0; i < this.inputs.length; i++ ) {
