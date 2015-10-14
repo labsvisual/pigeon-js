@@ -18,13 +18,13 @@
         <p id="messages"></p>
         <form id="testForm" class="testForm">
 
-            <input class="error" type="text" data-pigeon-validate="max-len:10; min-len:2; only-alphabets" name="Name" placeholder="Name" value="Hello"/>
-            <input type="text" data-pigeon-validate="email" name="email" placeholder="Email" value="334@doonschool.com"/>
-            <input type="text" data-pigeon-validate="phone" name="Phone" placeholder="Phone" value="8979998098"/>
-            <input type="text" data-pigeon-validate="required; alphanumeric" name="Alphanumeric" placeholder="alphanumeric" value="Hello123"/>
-            <input type="text" data-pigeon-validate="url" name="URL" placeholder="URL" value="https://google.com"/>
-            <input type="text" data-pigeon-validate="credit-card" name="credit-card" placeholder="Credit Card" value="4012888888881881"/>
-            <input type="submit" name="asd" />
+            <input type="text" data-pigeon-validate="max-len:10; min-len:2; only-alphabets" name="Name" placeholder="Name" />
+            <input type="text" data-pigeon-validate="email" name="email" placeholder="Email" />
+            <input type="text" data-pigeon-validate="phone" name="Phone" placeholder="Phone" />
+            <input type="text" data-pigeon-validate="required; alphanumeric" name="Alphanumeric" placeholder="alphanumeric" />
+            <input type="text" data-pigeon-validate="url" name="URL" placeholder="URL" />
+            <input type="text" data-pigeon-validate="credit-card" name="credit-card" placeholder="Credit Card"/>
+            <input type="submit" name="Submit" />
 
         </form>
 
@@ -33,7 +33,7 @@
 
             var a = new Pigeon({
                 method: "POST",
-                action: "http://192.168.33.10:9999",
+                action: "http://backend.address:9999",
                 formElement: "#testForm",
                 errorClass: "error",
                 prompt: function( element, message ) {

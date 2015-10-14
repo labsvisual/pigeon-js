@@ -10,7 +10,7 @@
 
 /**
  *
- *  Pigeon( String, String, String, Function )
+ *  Pigeon( String, String, String, Function, Function, Function, Boolean )
  *      - Object (config)                   ===== Contains the base configuration for the instance.
  *
  *          - String (method)               ===== The HTTP verb to use while executing the request.
