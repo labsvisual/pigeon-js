@@ -10,74 +10,64 @@
 
 /**
  *
- *  Pigeon( String, String, String )
+ *  Pigeon( String, String, String, Function )
  *      - String (method)               ===== The HTTP verb to use while executing the request.
  *      - String (action)               ===== The HTTP host to connect to for the request.
  *      - String (formElement)          ===== The form to used for this particular instance.
- *      - String (messageHandle)        ===== The form element which will get the messages from the form.
+ *      - Function (prompt)             ===== The function used to prompt the user of the error.
  *
  */
-function Pigeon( method, action, formElement, messageHandle ) {
+function Pigeon( config ) {
 
-    if ( method == null || method === "" ) {
-        console.log( "The method field is invalid. For the object to instantiate successfully, the initializer requires a 'method' field." );
+    if ( config == null ) {
+        console.log( "The configuration object is null. For the object to instantiate successfully, the initializer requires a configiration object." );
         return;
     }
 
-    if ( action == null || action === "" ) {
+    if ( config.method == null || config.method === "" ) {
+        console.log( "The 'method' field is invalid. For the object to instantiate successfully, the initializer requires a 'method' field." );
+        return;
+    }
+
+    if ( config.action == null || config.action === "" ) {
         console.log( "The 'action' field is invalid. For the object to instantiate successfully, the initializer requires a 'action' field." );
         return;
     }
 
-    if ( formElement == null || formElement === "" ) {
+    if ( config.prompt == null ) {
+        console.log( "The 'prompt' field is invalid. For the object to instantiate successfully, the initializer requires a 'prompt' field." );
+        return;
+    }
+
+    if ( config.formElement == null || config.formElement === "" ) {
         console.log( "The 'formElement' field is invalid. For the object to instantiate successfully, the initializer requires a 'formElement' field." );
         return;
     }
 
-    if ( messageHandle == null || messageHandle === "" ) {
-        console.log( "The 'messageHandle' field is invalid. For the object to instantiate successfully, the initializer requires a 'messageHandle' field." );
-        return;
-    }
-
-    this.method = method;
-    this.action = action;
+    this.method = config.method || "POST";
+    this.action = config.action || "/contact";
+    this.prompt = config.prompt;
 
     this.inputs = [];
 
     var elements = [];
 
-    switch( formElement.substring( 0, 1 ) ) {
+    switch( config.formElement.substring( 0, 1 ) ) {
 
         case "#":
-            elements = document.getElementById( formElement.replace( "#", "" ) );
+            elements = document.getElementById( config.formElement.replace( "#", "" ) );
             break;
 
         case ".":
-            elements = document.getElementsByClassName( formElement.replace( ".", "" ) )[ 0 ];
+            elements = document.getElementsByClassName( config.formElement.replace( ".", "" ) )[ 0 ];
             break;
 
         default:
-            elements = document.getElementsByTagName( formElement )[ 0 ];
-
-    }
-
-    switch( messageHandle.substring( 0, 1 ) ) {
-
-        case "#":
-            elementsHandle = document.getElementById( messageHandle.replace( "#", "" ) );
-            break;
-
-        case ".":
-            elementsHandle = document.getElementsByClassName( messageHandle.replace( ".", "" ) )[ 0 ];
-            break;
-
-        default:
-            elementsHandle = document.getElementsByTagName( messageHandle )[ 0 ];
+            elements = document.getElementsByTagName( config.formElement )[ 0 ];
 
     }
 
     this.formElement   = elements;
-    this.messageHandle = elementsHandle;
     this.initialize();
 
 }
@@ -384,8 +374,9 @@ Pigeon.prototype.validate = function() {
     }
 
     return {
-        isValid: ( errors.length == 0 ),
-        errors: errors
+        isValid: ( errors.length == 0 && errorElements.length == 0 ),
+        errors: errors,
+        errorElements: errorElements
     };
 
 }
@@ -395,7 +386,14 @@ Pigeon.prototype.submit = function() {
     var result = this.validate();
     if ( !result.isValid ) {
 
-        this.messageHandle.innerText = "Oops! Looks like there are some errors with the form.";
+        for( var i = 0; i < result.errors.length; i++ ) {
+
+            var currentError   = result.errors[ i ],
+                currentElement = result.errorElements[ i ];
+
+            this.prompt( currentElement, currentError );
+
+        }
 
     }
 
