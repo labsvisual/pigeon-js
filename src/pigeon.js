@@ -473,24 +473,8 @@ Pigeon.prototype.submit = function() {
 
     }
 
-    // Reminder to self: when you wrote this code, only God and you knew what is going on; now, only God knows.
-    // var responses = "{";
-    // for ( var i = 0; i < this.inputs.length; i++ ) {
-    //
-    //     var currentInput = this.inputs[ i ];
-    //     responses += "\"" + currentInput.name + "\"" + ":\"" + currentInput.value + "\",";
-    //
-    // }
-    //
-    // responses = "(" + responses.substring( 0, responses.length - 1 ) + "}" + ")";
-    // responses = eval( responses );
-
     // TODO: this is JUST for VANILLA JS.
     var params = self.formatParams();
-
-    // responses = "(" + responses.substring( 0, responses.length - 1 ) + "}" + ")";
-    // responses = ( responses );
-
     var xmlHttp = new XMLHttpRequest();
 
     xmlHttp.open( this.method, this.action, self.async );
