@@ -9,6 +9,10 @@
  */
 
 /**
+ * Preparing for somthing awesome!! Stay tuned!! :D
+ */
+
+/**
  *
  *  Pigeon( String, String, String, Function, Function, Function, Boolean )
  *      - Object (config)                   ===== Contains the base configuration for the instance.
