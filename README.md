@@ -20,7 +20,7 @@ Then, importing the library like:
 And we finally have a CDN. The best part is the fact that it's over HTTPS so if you site is on HTTPS, you can use the super-fast CDN
 instead.
 ```html
-<script src="https://cdn.jsdelivr.net/pigeon-js/1.0.0/pigeon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pigeon-js/1.0.1/pigeon.min.js"></script>
 ```
 
 ## Usage
